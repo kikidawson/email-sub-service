@@ -22,26 +22,39 @@ resource "aws_iam_role" "subscriber_lambda" {
   assume_role_policy = data.aws_iam_policy_document.trust_policy.json
 }
 
-resource "aws_iam_policy" "subscriber_lambda" {
+resource "aws_iam_policy" "custom" {
   name        = "ess-subscriber-lambda"
   path        = "/"
   description = "Policy to allow lambda read access to subscribers table."
   policy      = data.aws_iam_policy_document.subscriber_lambda_role.json
 }
 
-resource "aws_iam_policy_attachment" "subscriber_lambda" {
+resource "aws_iam_policy_attachment" "custom" {
   name       = "ess-subscriber-lambda"
   roles      = [aws_iam_role.subscriber_lambda.name]
-  policy_arn = aws_iam_policy.subscriber_lambda.arn
+  policy_arn = aws_iam_policy.custom.arn
+}
+
+resource "aws_iam_policy_attachment" "basic" {
+  name       = "ess-subscriber-basic-lambda"
+  roles      = [aws_iam_role.subscriber_lambda.name]
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
 
 resource "aws_lambda_function" "subscriber" {
-  function_name = "ess-subscriber"
-  description   = "This lambda subscribes email address to an SNS topic."
-  filename      = "${path.module}/python/subscriber_lambda.zip"
-  handler       = "subscriber_lambda.handler"
-  role          = aws_iam_role.subscriber_lambda.arn
-  runtime       = "python3.11"
+  function_name    = "ess-subscriber"
+  description      = "This lambda subscribes email address to an SNS topic."
+  filename         = "${path.module}/python/subscriber_lambda.zip"
+  handler          = "subscriber_lambda.handler"
+  role             = aws_iam_role.subscriber_lambda.arn
+  runtime          = "python3.11"
+  source_code_hash = data.archive_file.lambda.output_base64sha256
+
+  environment {
+    variables = {
+      SNS_TOPIC_ARN = aws_sns_topic.subscribers.arn
+    }
+  }
 }
 
 resource "aws_cloudwatch_log_group" "subscriber_lambda" {
@@ -66,3 +79,12 @@ resource "aws_lambda_event_source_mapping" "subscribers_table" {
   function_name     = aws_lambda_function.subscriber.arn
   starting_position = "LATEST"
 }
+
+resource "aws_sns_topic" "subscribers" {
+  name = "ess-subscribers"
+}
+
+# resource "aws_sns_topic_policy" "subscribers" {
+#   arn    = aws_sns_topic.subscribers.arn
+#   policy = 
+# }

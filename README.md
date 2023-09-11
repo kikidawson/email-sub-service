@@ -22,3 +22,6 @@ TODO
 - [ ] create own lambda modules
 - [ ] possibly version using tf modules?
 - [ ] versioning?
+
+### notes
+what happens once emails have been submitted? 

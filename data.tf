@@ -29,4 +29,10 @@ data "aws_iam_policy_document" "subscriber_lambda_role" {
       "dynamodb:ListStreams",
     ]
   }
+
+  statement {
+    sid       = "AllowLambdaToSubscribeEmailAddresses"
+    resources = [aws_sns_topic.subscribers.arn]
+    actions   = ["SNS:Subscribe"]
+  }
 }
