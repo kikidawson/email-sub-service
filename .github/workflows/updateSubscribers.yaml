@@ -2,13 +2,13 @@ name: Subscribe Email Address
 on: 
   workflow_dispatch:
     inputs:
-      boolean:
-        description: "Random Boolean"
+      emailAddress:
+        description: "Email Address"
         required: true
-        type: boolean
+        type: string
 
 jobs:
   updateSubscribersTable:
     runs-on: ubuntu-latest
     steps:
-    - run: echo "running..."
+    - run: echo ${{ github.event.inputs.emailAddress }}
