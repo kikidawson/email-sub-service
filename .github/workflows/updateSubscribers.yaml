@@ -1,0 +1,14 @@
+name: Subscribe Email Address
+on: 
+  workflow_dispatch:
+    inputs:
+      boolean:
+        description: "Random Boolean"
+        required: true
+        type: boolean
+
+jobs:
+  updateSubscribersTable:
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo "running..."
